@@ -13,6 +13,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import kr.co.kworks.socket_server_test.model.Ack;
+import kr.co.kworks.socket_server_test.model.Recognition;
+
 public class SocketClient {
 
     private static final String CMD_RECOGNITION = "recognition";

@@ -1,4 +1,4 @@
-package kr.co.kworks.socket_server_test;
+package kr.co.kworks.socket_server_test.model;
 
 import androidx.annotation.NonNull;
 

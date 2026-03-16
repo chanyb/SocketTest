@@ -1,16 +1,16 @@
-package kr.co.kworks.socket_server_test;
+package kr.co.kworks.socket_server_test.model;
 
 import androidx.annotation.NonNull;
 
 import java.util.Locale;
 
 public class Recognition {
-    String id;
-    String datetime;
-    float x1, y1;
-    float x2, y2;
-    float accuracy;
-    int type;
+    public String id;
+    public String datetime;
+    public float x1, y1;
+    public float x2, y2;
+    public float accuracy;
+    public int type;
 
     public Recognition() {
         this.id = "";

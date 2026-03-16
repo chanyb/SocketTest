@@ -21,14 +21,23 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import kr.co.kworks.socket_server_test.model.Ack;
+import kr.co.kworks.socket_server_test.model.Recognition;
+
 
 public class SocketServer extends Thread {
 
-    private static final String CMD_RECOGNITION = "recognition";
-    private static final String CMD_DATETIME = "datetime";
     private static final String CMD_ACK = "ack";
+    private static final String CMD_RECOGNITION = "setRecognition";
+    private static final String CMD_DATETIME = "getDatetime";
+    private static final String CMD_READY_FIRE = "readyFire";
+    private static final String CMD_DO_FIRE = "doFire";
+    private static final String CMD_WS = "getWeatherSensor";
+
     private static final String ACK_TYPE_RSP = "response";
     private static final String ACK_TYPE_RES = "result";
+    private static final String ACK_MESSAGE_SUCCESS = "success";
+    private static final String ACK_MESSAGE_FAIL = "fail";
 
     private final int port;
     private volatile boolean running = true;
@@ -151,56 +160,15 @@ public class SocketServer extends Thread {
         }
     }
 
-//    private void read(SocketChannel channel) {
-//        ClientState clientState = clients.get(channel);
-//        if (clientState == null) { close(channel); return; }
-//
-//        readBuffer.clear();
-//        try {
-//            int n = channel.read(readBuffer);
-//            if (n == -1) { close(channel); return; }
-//            if (n == 0)  { return; }
-//
-//            readBuffer.flip();
-//            clientState.appendAndParse(readBuffer, (payload) -> {
-//                clientState.touch();
-//                handleFrame(channel, payload);
-//            });
-//            clientState.touch();
-//        } catch (Exception e) {
-//            Logger.getInstance().error("read error: ", e);
-//            safeClose(channel);
-//        }
-//    }
-
-//    /** payload가 어떤 명령어인지 판단 */
-//    private void handleFrame(SocketChannel channel, byte[] payload) {
-//        if (isAsciiText(payload)) {
-//            String command = new String(payload, StandardCharsets.UTF_8).trim();
-//            mainViewModel.commands.postValue(command);
-//            switch (command) {
-//                case CMD_RECOGNITION:
-//                    break;
-//                case CMD_DATETIME:
-//
-//                    break;
-//                default:
-//                    enqueueString(channel, command);
-//
-//            }
-//
-//            if (listener != null) listener.onText(channel, command);
-//        } else {
-//            // 명령어 없이 왔을 때 처리?
-//            Logger.getInstance().info("handleImage: " + payload.length + " bytes");
-//        }
-//    }
-
     private void handlePacket(SocketChannel channel, Packet packet) {
         String command = packet.command == null ? "" : packet.command.trim();
         byte[] data = packet.data;
 
         switch (command) {
+            case CMD_ACK:
+                handleAck(channel, data);
+                break;
+
             case CMD_RECOGNITION:
                 handleRecognition(channel, data);
                 break;
@@ -209,9 +177,14 @@ public class SocketServer extends Thread {
                 handleDatetime(channel, data);
                 break;
 
-            case CMD_ACK:
-                handleAck(channel, data);
+            case CMD_READY_FIRE:
+
                 break;
+
+            case CMD_DO_FIRE:
+                break;
+
+
 
             default:
                 Logger.getInstance().info("unknown command: " + command);
@@ -228,7 +201,7 @@ public class SocketServer extends Thread {
         Ack ack = new Ack();
         ack.type = ACK_TYPE_RES;
         ack.command = CMD_RECOGNITION;
-        ack.message = "fail";
+        ack.message = ACK_MESSAGE_FAIL;
 
         try {
             String json = new String(data, StandardCharsets.UTF_8);
@@ -240,7 +213,7 @@ public class SocketServer extends Thread {
                 mainViewModel.commands.setValue("[in] recognition " + recognition.toString());
             });
 
-            ack.message = "success";
+            ack.message = ACK_MESSAGE_SUCCESS;
             enqueuePacket(channel, CMD_ACK, getByteArrayFromAck(ack));
 
         } catch (Exception e) {
@@ -355,16 +328,6 @@ public class SocketServer extends Thread {
         enqueueBinary(ch, bytes);
     }
 
-//    private void enqueue(SocketChannel channel, String msg) {
-//        Logger.getInstance().info("enqueue: " + msg);
-//        ClientState clientState = clients.get(channel);
-//        if (clientState == null) return;
-//        synchronized (clientState.out) { clientState.out.add(msg); }
-//        SelectionKey key = channel.keyFor(selector);
-//        if (key != null && key.isValid()) key.interestOps(key.interestOps() | SelectionKey.OP_WRITE);
-//        selector.wakeup();
-//    }
-
     public void enqueueBinary(SocketChannel ch, byte[] payload) {
         ClientState st = clients.get(ch);
         if (st == null) return;
@@ -426,10 +389,6 @@ public class SocketServer extends Thread {
             close(channel);
         }
     }
-
-//    public void broadcast(String msg) {
-//        for (SocketChannel channel : clients.keySet()) enqueue(channel, msg);
-//    }
 
     private void sweepIdleClients(long idleMillis) {
         long now = System.currentTimeMillis();
@@ -564,8 +523,7 @@ public class SocketServer extends Thread {
     }
 
     private void handleAck(SocketChannel socketChannel, byte[] data) {
-        String stringData = new String(data, StandardCharsets.UTF_8);
-        Ack ack = gson.fromJson(stringData, Ack.class);
+        Ack ack = getAckFromByteArray(data);
 
         switch (ack.type) {
             case ACK_TYPE_RES:
@@ -581,7 +539,7 @@ public class SocketServer extends Thread {
                         mainViewModel.commands.setValue("[in] ack " + recognition.toString());
                     });
                     ack.type = ACK_TYPE_RES;
-                    ack.message = "success";
+                    ack.message = ACK_MESSAGE_SUCCESS;
                     enqueuePacket(socketChannel, CMD_ACK, getByteArrayFromAck(ack));
                 }
                 break;

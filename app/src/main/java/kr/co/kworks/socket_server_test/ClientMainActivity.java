@@ -18,7 +18,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import kr.co.kworks.socket_server_test.databinding.ActivityClientMainBinding;
-import kr.co.kworks.socket_server_test.databinding.ActivityMainBinding;
+import kr.co.kworks.socket_server_test.model.Recognition;
 
 
 public class ClientMainActivity extends AppCompatActivity {
