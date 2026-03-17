@@ -22,7 +22,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import kr.co.kworks.socket_server_test.model.Ack;
+import kr.co.kworks.socket_server_test.model.Fire;
 import kr.co.kworks.socket_server_test.model.Recognition;
+import kr.co.kworks.socket_server_test.model.WeatherSensor;
 
 
 public class SocketServer extends Thread {
@@ -178,13 +180,12 @@ public class SocketServer extends Thread {
                 break;
 
             case CMD_READY_FIRE:
-
+                handleReadyFire(channel, data);
                 break;
 
-            case CMD_DO_FIRE:
+            case CMD_WS:
+                handleWeatherSensor(channel, data);
                 break;
-
-
 
             default:
                 Logger.getInstance().info("unknown command: " + command);
@@ -241,6 +242,59 @@ public class SocketServer extends Thread {
             Logger.getInstance().error("handleDatetime error: ", e);
             enqueueTextPacket(channel, "error", "datetime error");
         }
+    }
+
+    private void handleReadyFire(SocketChannel channel, byte[] data) {
+        Ack ack = new Ack();
+        ack.type = ACK_TYPE_RES;
+        ack.command = CMD_READY_FIRE;
+        ack.message = ACK_MESSAGE_FAIL;
+
+        try {
+            String json = new String(data, StandardCharsets.UTF_8);
+            Recognition recognition = gson.fromJson(json, Recognition.class);
+            ack.commandId = recognition.id;
+
+            // 필요하면 ViewModel 전달
+            mHandler.post(() -> {
+                mainViewModel.commands.setValue("[in] recognition " + recognition.toString());
+            });
+
+            ack.message = ACK_MESSAGE_SUCCESS;
+            enqueuePacket(channel, CMD_ACK, getByteArrayFromAck(ack));
+
+        } catch (Exception e) {
+            Logger.getInstance().error("handleRecognition error: ", e);
+            enqueuePacket(channel, CMD_ACK, getByteArrayFromAck(ack));
+        }
+    }
+
+    private void handleWeatherSensor(SocketChannel channel, byte[] data) {
+        Ack ack = new Ack();
+        ack.type = ACK_TYPE_RSP;
+        ack.command = CMD_WS;
+        ack.message = ACK_MESSAGE_FAIL;
+
+        try {
+
+            // 필요하면 ViewModel 전달
+            mHandler.post(() -> {
+                mainViewModel.commands.setValue("[in] " + CMD_WS);
+            });
+
+            WeatherSensor ws = new WeatherSensor();
+            ack.message = gson.toJson(ws);
+            enqueuePacket(channel, CMD_ACK, getByteArrayFromAck(ack));
+
+        } catch (Exception e) {
+            Logger.getInstance().error("handleRecognition error: ", e);
+            enqueuePacket(channel, CMD_ACK, getByteArrayFromAck(ack));
+        }
+    }
+
+    private void sendDoFire(SocketChannel channel, Fire fire) {
+        String jsonString = gson.toJson(fire);
+        enqueuePacket(channel, CMD_DO_FIRE, jsonString.getBytes(StandardCharsets.UTF_8));
     }
 
     public void enqueuePacket(SocketChannel ch, String command, byte[] data) {
