@@ -14,15 +14,22 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import kr.co.kworks.socket_server_test.model.Ack;
+import kr.co.kworks.socket_server_test.model.Fire;
 import kr.co.kworks.socket_server_test.model.Recognition;
 
 public class SocketClient {
 
-    private static final String CMD_RECOGNITION = "recognition";
-    private static final String CMD_DATETIME = "datetime";
-    private static final String CMD_ACK = "ack";
-    private static final String ACK_TYPE_RSP = "response";
-    private static final String ACK_TYPE_RES = "result";
+    public static final String CMD_ACK = "ack";
+    public static final String CMD_RECOGNITION = "setRecognition";
+    public static final String CMD_DATETIME = "getDatetime";
+    public static final String CMD_READY_FIRE = "readyFire";
+    public static final String CMD_DO_FIRE = "doFire";
+    public static final String CMD_WS = "getWeatherSensor";
+
+    public static final String ACK_TYPE_RSP = "response";
+    public static final String ACK_TYPE_RES = "result";
+    public static final String ACK_MESSAGE_SUCCESS = "success";
+    public static final String ACK_MESSAGE_FAIL = "fail";
 
     private final String host;
     private final int port;
@@ -152,6 +159,15 @@ public class SocketClient {
     public void requestDatetime() {
         Logger.getInstance().info("requestDatetime()");
         sendPacket(CMD_DATETIME, new byte[0]);
+    }
+
+    public void sendReadyFire(Fire fire) {
+        try {
+            String json = gson.toJson(fire);
+            sendPacket(CMD_READY_FIRE, json.getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            if (listener != null) listener.onError(e);
+        }
     }
 
     public void sendRecognition(Recognition recognition) {

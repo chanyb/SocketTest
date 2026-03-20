@@ -18,6 +18,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import kr.co.kworks.socket_server_test.databinding.ActivityClientMainBinding;
+import kr.co.kworks.socket_server_test.model.Fire;
 import kr.co.kworks.socket_server_test.model.Recognition;
 
 
@@ -31,6 +32,7 @@ public class ClientMainActivity extends AppCompatActivity {
     private ScheduledFuture<?> randomCommand;
     private SocketClient socketClient;
     private Thread socketThread;
+    private CalendarHandler calendarHandler;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,6 +56,7 @@ public class ClientMainActivity extends AppCompatActivity {
         commandList = new ArrayList<>();
         commandAdapter = new CommandAdapter(this, commandList);
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
+        calendarHandler = new CalendarHandler();
     }
 
     private void recyclerViewInit() {
@@ -83,6 +86,11 @@ public class ClientMainActivity extends AppCompatActivity {
 
             if (randInt < 20) {
                 //nothing to do
+                Fire fire = new Fire();
+                fire.id = String.valueOf(UUID.randomUUID());
+                fire.datetime = calendarHandler.getCurrentDatetimeString();
+
+                socketClient.sendReadyFire(fire);
             } else if (randInt < 50) {
                 socketClient.requestDatetime();
             } else {
@@ -90,7 +98,7 @@ public class ClientMainActivity extends AppCompatActivity {
                 recognition.id = String.valueOf(UUID.randomUUID());
                 socketClient.sendRecognition(recognition);
             }
-        }, 2000, 100, TimeUnit.MILLISECONDS);
+        }, 2000, 2000, TimeUnit.MILLISECONDS);
     }
 
     private void stopSchedule() {
