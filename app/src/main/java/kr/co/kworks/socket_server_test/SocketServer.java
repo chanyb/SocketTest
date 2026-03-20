@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import kr.co.kworks.socket_server_test.model.Ack;
+import kr.co.kworks.socket_server_test.model.DoFire;
 import kr.co.kworks.socket_server_test.model.Fire;
 import kr.co.kworks.socket_server_test.model.Recognition;
 import kr.co.kworks.socket_server_test.model.WeatherSensor;
@@ -29,17 +30,17 @@ import kr.co.kworks.socket_server_test.model.WeatherSensor;
 
 public class SocketServer extends Thread {
 
-    private static final String CMD_ACK = "ack";
-    private static final String CMD_RECOGNITION = "setRecognition";
-    private static final String CMD_DATETIME = "getDatetime";
-    private static final String CMD_READY_FIRE = "readyFire";
-    private static final String CMD_DO_FIRE = "doFire";
-    private static final String CMD_WS = "getWeatherSensor";
+    public static final String CMD_ACK = "ack";
+    public static final String CMD_RECOGNITION = "setRecognition";
+    public static final String CMD_DATETIME = "getDatetime";
+    public static final String CMD_READY_FIRE = "readyFire";
+    public static final String CMD_DO_FIRE = "doFire";
+    public static final String CMD_WS = "getWeatherSensor";
 
-    private static final String ACK_TYPE_RSP = "response";
-    private static final String ACK_TYPE_RES = "result";
-    private static final String ACK_MESSAGE_SUCCESS = "success";
-    private static final String ACK_MESSAGE_FAIL = "fail";
+    public static final String ACK_TYPE_RSP = "response";
+    public static final String ACK_TYPE_RES = "result";
+    public static final String ACK_MESSAGE_SUCCESS = "success";
+    public static final String ACK_MESSAGE_FAIL = "fail";
 
     private final int port;
     private volatile boolean running = true;
@@ -252,16 +253,22 @@ public class SocketServer extends Thread {
 
         try {
             String json = new String(data, StandardCharsets.UTF_8);
-            Recognition recognition = gson.fromJson(json, Recognition.class);
-            ack.commandId = recognition.id;
+            Fire fire = gson.fromJson(json, Fire.class);
+            ack.commandId = fire.id;
 
             // 필요하면 ViewModel 전달
             mHandler.post(() -> {
-                mainViewModel.commands.setValue("[in] recognition " + recognition.toString());
+                mainViewModel.commands.setValue("[in] recognition " + fire.toString());
             });
 
             ack.message = ACK_MESSAGE_SUCCESS;
             enqueuePacket(channel, CMD_ACK, getByteArrayFromAck(ack));
+
+            DoFire doFire = new DoFire();
+            doFire.fire = fire;
+            doFire.channel = channel;
+
+            mainViewModel.uuidQueue.add(doFire);
 
         } catch (Exception e) {
             Logger.getInstance().error("handleRecognition error: ", e);
