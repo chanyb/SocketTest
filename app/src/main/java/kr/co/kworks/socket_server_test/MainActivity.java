@@ -31,10 +31,11 @@ public class MainActivity extends AppCompatActivity {
     private CopyOnWriteArrayList<String> waiting;
     private MainViewModel mainViewModel;
     private ScheduledExecutorService executor;
-    private ScheduledFuture<?> waitingToCommand, fireDialogScheduled;
+    private ScheduledFuture<?> waitingToCommand, fireDialogScheduled, autoClickScheduled;
     private SocketServer socketServer;
     private Thread socketThread;
     private Gson gson;
+    private int autoClickCount = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -62,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         commandAdapter = new CommandAdapter(this, commandList);
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         gson = new Gson();
+        autoClickCount = 5;
     }
 
     private void recyclerViewInit() {
@@ -80,7 +82,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startSchedule() {
-        stopSchedule();
+        startFireDialogSchedule();
+        startAutoClickScheduled();
+    }
+
+    private void stopSchedule() {
+        stopFireDialogScheduled();
+        stopAutoClickScheduled();
+    }
+
+    private void stopFireDialogScheduled() {
+        if (fireDialogScheduled != null && !fireDialogScheduled.isCancelled()) fireDialogScheduled.cancel(true);
+    }
+
+    private void startFireDialogSchedule() {
+        stopFireDialogScheduled();
         fireDialogScheduled = executor.scheduleWithFixedDelay(() -> {
             if (binding.loFire.getVisibility() == View.VISIBLE) return;
             DoFire doFire = mainViewModel.uuidQueue.peek();
@@ -92,8 +108,23 @@ public class MainActivity extends AppCompatActivity {
         }, 1000, 1000, TimeUnit.MILLISECONDS);
     }
 
-    private void stopSchedule() {
-        if (fireDialogScheduled != null && !fireDialogScheduled.isCancelled()) fireDialogScheduled.cancel(true);
+    private void stopAutoClickScheduled() {
+        if (autoClickScheduled != null && !autoClickScheduled.isCancelled()) {
+            autoClickScheduled.cancel(true);
+        }
+    }
+
+    private void startAutoClickScheduled() {
+        stopAutoClickScheduled();
+        autoClickScheduled = executor.scheduleWithFixedDelay(() -> {
+            if (binding.loFire.getVisibility() == View.GONE) return;
+            autoClickCount -= 1;
+            if (autoClickCount == 0) {
+                runOnUiThread(() -> binding.txtFire.callOnClick());
+                autoClickCount = 5;
+            }
+
+        }, 0, 1000, TimeUnit.MILLISECONDS);
     }
 
     private void insertToRecyclerView(String str) {
