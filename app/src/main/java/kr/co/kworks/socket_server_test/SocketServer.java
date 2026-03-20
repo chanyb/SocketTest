@@ -307,7 +307,7 @@ public class SocketServer extends Thread {
     public void enqueuePacket(SocketChannel ch, String command, byte[] data) {
         String str = getStringFromByteArray(data);
         mHandler.post(() -> {
-            mainViewModel.commands.postValue("[out] " + "ack " + str);
+            mainViewModel.commands.postValue("[out] " + command + " " + str);
         });
         ClientState st = clients.get(ch);
         if (st == null) return;
