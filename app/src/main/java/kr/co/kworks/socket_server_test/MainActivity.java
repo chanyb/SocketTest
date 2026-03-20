@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
     private SocketServer socketServer;
     private Thread socketThread;
     private Gson gson;
-    private int autoClickCount = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
         commandAdapter = new CommandAdapter(this, commandList);
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         gson = new Gson();
-        autoClickCount = 5;
     }
 
     private void recyclerViewInit() {
@@ -78,6 +77,9 @@ public class MainActivity extends AppCompatActivity {
         });
         mainViewModel.clientCount.observe(this, o -> {
             binding.txtClient.setText(String.valueOf(o));
+        });
+        mainViewModel.autoClickTimer.observe(this , o -> {
+            binding.txtFire.setText(String.format(Locale.KOREA,"발사(%d)", o));
         });
     }
 
@@ -118,10 +120,15 @@ public class MainActivity extends AppCompatActivity {
         stopAutoClickScheduled();
         autoClickScheduled = executor.scheduleWithFixedDelay(() -> {
             if (binding.loFire.getVisibility() == View.GONE) return;
-            autoClickCount -= 1;
-            if (autoClickCount == 0) {
-                runOnUiThread(() -> binding.txtFire.callOnClick());
-                autoClickCount = 5;
+            int timer = mainViewModel.autoClickTimer.getValue();
+            timer -= 1;
+            int finalTimer = timer;
+            runOnUiThread(() -> mainViewModel.autoClickTimer.setValue(finalTimer));
+            if (timer == 0) {
+                runOnUiThread(() -> {
+                    binding.txtFire.callOnClick();
+                    mainViewModel.autoClickTimer.setValue(5);
+                });
             }
 
         }, 0, 1000, TimeUnit.MILLISECONDS);
