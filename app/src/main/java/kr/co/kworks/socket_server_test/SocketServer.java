@@ -92,17 +92,14 @@ public class SocketServer extends Thread {
                     if (!key.isValid()) continue;
 
                     if (key.isAcceptable()) {
-                        Logger.getInstance().info("acceptable");
                         accept();
                         continue;
                     }
                     if (key.isReadable())   {
-                        Logger.getInstance().info("readable");
                         read((SocketChannel) key.channel());
                         continue;
                     }
                     if (key.isWritable())   {
-                        Logger.getInstance().info("writeable");
                         write((SocketChannel) key.channel());
                         continue;
                     }
