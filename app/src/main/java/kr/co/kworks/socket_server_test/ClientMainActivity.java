@@ -96,6 +96,21 @@ public class ClientMainActivity extends AppCompatActivity {
             } else {
                 Recognition recognition = new Recognition();
                 recognition.id = String.valueOf(UUID.randomUUID());
+
+                randInt = random.nextInt(100);
+                if (randInt < 20) {
+                    recognition.image = GlobalApplication.getContext().getByteArrayFromDrawable(this, R.drawable.img_fire_location);
+                } else if (randInt < 40) {
+                    recognition.image = GlobalApplication.getContext().getByteArrayFromDrawable(this, R.drawable.img_fire_location_2);
+                } else if (randInt < 60) {
+                    recognition.image = GlobalApplication.getContext().getByteArrayFromDrawable(this, R.drawable.img_fire_location_3);
+                } else if (randInt < 80) {
+                    recognition.image = GlobalApplication.getContext().getByteArrayFromDrawable(this, R.drawable.img_fire_location_4);
+                } else {
+                    recognition.image = GlobalApplication.getContext().getByteArrayFromDrawable(this, R.drawable.img_fire_location_5);
+                }
+
+
                 socketClient.sendRecognition(recognition);
             }
         }, 2000, 2000, TimeUnit.MILLISECONDS);
