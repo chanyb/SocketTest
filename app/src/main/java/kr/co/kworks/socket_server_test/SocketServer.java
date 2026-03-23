@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Base64;
 
 import com.google.gson.Gson;
 
@@ -210,9 +211,12 @@ public class SocketServer extends Thread {
             Recognition recognition = gson.fromJson(json, Recognition.class);
             ack.commandId = recognition.id;
 
+            String base64image = Base64.encodeToString(recognition.image, Base64.DEFAULT);
+
             // 필요하면 ViewModel 전달
             mHandler.post(() -> {
                 mainViewModel.commands.setValue("[in] recognition " + recognition.toString());
+                mainViewModel.imageBase64String.setValue(base64image);
             });
 
             ack.message = ACK_MESSAGE_SUCCESS;

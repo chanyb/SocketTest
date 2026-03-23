@@ -11,6 +11,7 @@ public class Recognition {
     public float x2, y2;
     public float accuracy;
     public int type;
+    public byte[] image;
 
     public Recognition() {
         this.id = "";
@@ -32,6 +33,8 @@ public class Recognition {
         this.y2 = y2;
         this.accuracy = accuracy;
         this.type = type;
+        this.image = null;
+
     }
 
     @NonNull

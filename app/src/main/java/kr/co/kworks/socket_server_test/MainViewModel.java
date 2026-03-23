@@ -12,7 +12,7 @@ import kr.co.kworks.socket_server_test.model.Fire;
 
 public class MainViewModel extends ViewModel {
     public MutableLiveData<Integer> clientCount, autoClickTimer;
-    public MutableLiveData<String> commands;
+    public MutableLiveData<String> commands, imageBase64String;
     public MutableLiveData<Boolean> connectedWithServer;
     public Queue<DoFire> uuidQueue; // add, poll
 
@@ -24,6 +24,6 @@ public class MainViewModel extends ViewModel {
         connectedWithServer = new MutableLiveData<>(false);
         uuidQueue = new LinkedList<>();
         autoClickTimer = new MutableLiveData<>(5);
-
+        imageBase64String = new MutableLiveData<>();
     }
 }

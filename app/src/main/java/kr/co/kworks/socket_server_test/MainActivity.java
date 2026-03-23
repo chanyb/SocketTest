@@ -1,6 +1,9 @@
 package kr.co.kworks.socket_server_test;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,6 +12,7 @@ import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 
 import java.nio.channels.SocketChannel;
@@ -80,6 +84,11 @@ public class MainActivity extends AppCompatActivity {
         });
         mainViewModel.autoClickTimer.observe(this , o -> {
             binding.txtFire.setText(String.format(Locale.KOREA,"발사(%d)", o));
+        });
+        mainViewModel.imageBase64String.observe(this, o -> {
+            byte[] imageBytes = Base64.decode(o, Base64.DEFAULT);
+            Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+            Glide.with(this).load(bitmap).into(binding.imgRecognition);
         });
     }
 
