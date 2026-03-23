@@ -111,7 +111,7 @@ public class ClientMainActivity extends AppCompatActivity {
     }
 
     private void startSocketClient() {
-        socketClient = new SocketClient("192.168.10.40", 7833);
+        socketClient = new SocketClient("192.168.10.70", 7833);
         socketClient.setListener(new SocketClient.ClientListener() {
             @Override
             public void onConnected() {
