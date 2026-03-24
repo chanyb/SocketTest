@@ -33,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private CommandAdapter commandAdapter;
     private CopyOnWriteArrayList<String> commandList;
-    private CopyOnWriteArrayList<String> waiting;
     private MainViewModel mainViewModel;
     private ScheduledExecutorService executor;
     private ScheduledFuture<?> waitingToCommand, fireDialogScheduled, autoClickScheduled;
@@ -63,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
     private void init() {
         executor = Executors.newScheduledThreadPool(5);
         commandList = new CopyOnWriteArrayList<>();
-        waiting = new CopyOnWriteArrayList<>();
         commandAdapter = new CommandAdapter(this, commandList);
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         gson = new Gson();
@@ -75,10 +73,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void observerInit() {
-        mainViewModel.commands.observe(this, o -> {
-            waiting.add(o);
-            binding.txtQueue.setText(String.valueOf(waiting.size()));
-        });
         mainViewModel.clientCount.observe(this, o -> {
             binding.txtClient.setText(String.valueOf(o));
         });
@@ -155,13 +149,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClientConnected(SocketChannel ch) {
                 SocketServer.ServerListener.super.onClientConnected(ch);
-                mainViewModel.commands.postValue("onClientConnected: " + ch.toString());
+                mainViewModel.commandQueue.add("onClientConnected: " + ch.toString());
             }
 
             @Override
             public void onClientDisconnected(SocketChannel ch, Throwable cause) {
                 SocketServer.ServerListener.super.onClientDisconnected(ch, cause);
-                mainViewModel.commands.postValue("onClientDisconnected: " + ch.toString());
+                mainViewModel.commandQueue.add("onClientDisconnected: " + ch.toString());
             }
         });
 
@@ -185,12 +179,11 @@ public class MainActivity extends AppCompatActivity {
     private void startWaitingToCommand() {
         stopWaitingToCommand();
         waitingToCommand = executor.scheduleWithFixedDelay(() -> {
-            if (waiting.isEmpty()) return;
-            String str = waiting.get(0);
-            waiting.remove(0);
+            if (mainViewModel.commandQueue.isEmpty()) return;
+            String str = mainViewModel.commandQueue.poll();
             runOnUiThread(() -> {
                 insertToRecyclerView(str);
-                binding.txtQueue.setText(String.valueOf(waiting.size()));
+                binding.txtQueue.setText(String.valueOf(mainViewModel.commandQueue.size()));
             });
         },0, 200, TimeUnit.MILLISECONDS);
     }

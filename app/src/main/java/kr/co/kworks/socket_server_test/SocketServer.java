@@ -84,7 +84,6 @@ public class SocketServer extends Thread {
 
             while (running) {
                 selector.select(1000); // 1s 타임아웃 (깨우기용)
-//                mainViewModel.commands.postValue("...");
                 for (Iterator<SelectionKey> it = selector.selectedKeys().iterator(); it.hasNext();) {
                     SelectionKey key = it.next();
                     it.remove();
@@ -212,7 +211,7 @@ public class SocketServer extends Thread {
 
             // 필요하면 ViewModel 전달
             mHandler.post(() -> {
-                mainViewModel.commands.setValue("[in] recognition " + recognition.toString());
+                mainViewModel.commandQueue.add("[in] " + CMD_RECOGNITION + " " + recognition.toString());
                 mainViewModel.imageBase64String.setValue(base64image);
             });
 
@@ -226,9 +225,7 @@ public class SocketServer extends Thread {
     }
 
     private void handleDatetime(SocketChannel channel, byte[] data) {
-        mHandler.post(() -> {
-            mainViewModel.commands.setValue("[in] " + CMD_DATETIME);
-        });
+        mainViewModel.commandQueue.add("[in] " + CMD_DATETIME);
 
         try {
             String current = calendarHandler.getCurrentDatetimeString();
@@ -257,10 +254,7 @@ public class SocketServer extends Thread {
             Fire fire = gson.fromJson(json, Fire.class);
             ack.commandId = fire.id;
 
-            // 필요하면 ViewModel 전달
-            mHandler.post(() -> {
-                mainViewModel.commands.setValue("[in] recognition " + fire.toString());
-            });
+            mainViewModel.commandQueue.add("[in] recognition " + fire.toString());
 
             ack.message = ACK_MESSAGE_SUCCESS;
             enqueuePacket(channel, CMD_ACK, getByteArrayFromAck(ack));
@@ -284,11 +278,7 @@ public class SocketServer extends Thread {
         ack.message = ACK_MESSAGE_FAIL;
 
         try {
-
-            // 필요하면 ViewModel 전달
-            mHandler.post(() -> {
-                mainViewModel.commands.setValue("[in] " + CMD_WS);
-            });
+            mainViewModel.commandQueue.add("[in] " + CMD_WS);
 
             WeatherSensor ws = new WeatherSensor();
             ack.message = gson.toJson(ws);
@@ -307,9 +297,8 @@ public class SocketServer extends Thread {
 
     public void enqueuePacket(SocketChannel ch, String command, byte[] data) {
         String str = getStringFromByteArray(data);
-        mHandler.post(() -> {
-            mainViewModel.commands.postValue("[out] " + command + " " + str);
-        });
+        mainViewModel.commandQueue.add("[out] " + command + " " + str);
+
         ClientState st = clients.get(ch);
         if (st == null) return;
 
@@ -590,16 +579,12 @@ public class SocketServer extends Thread {
         switch (ack.type) {
             case ACK_TYPE_RES:
                 // SUCCESS, FAIL
-                mHandler.post(() -> {
-                    mainViewModel.commands.setValue("[in] ack " + ack.toString());
-                });
+                mainViewModel.commandQueue.add("[in] ack " + ack.toString());
                 break;
             case ACK_TYPE_RSP:
                 if (ack.command.equals(CMD_RECOGNITION)) {
                     Recognition recognition = gson.fromJson(ack.message, Recognition.class);
-                    mHandler.post(() -> {
-                        mainViewModel.commands.setValue("[in] ack " + recognition.toString());
-                    });
+                    mainViewModel.commandQueue.add("[in] ack " + recognition.toString());
                     ack.type = ACK_TYPE_RES;
                     ack.message = ACK_MESSAGE_SUCCESS;
                     enqueuePacket(socketChannel, CMD_ACK, getByteArrayFromAck(ack));

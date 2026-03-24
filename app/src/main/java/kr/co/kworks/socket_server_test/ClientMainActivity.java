@@ -65,9 +65,6 @@ public class ClientMainActivity extends AppCompatActivity {
     }
 
     private void observerInit() {
-        mainViewModel.commands.observe(this, o -> {
-            insertToRecyclerView(o);
-        });
         mainViewModel.connectedWithServer.observe(this, o -> {
             binding.txtClient.setText(String.valueOf(o));
         });
@@ -131,14 +128,14 @@ public class ClientMainActivity extends AppCompatActivity {
             @Override
             public void onConnected() {
                 SocketClient.ClientListener.super.onConnected();
-                mainViewModel.commands.postValue("onConnect");
+                mainViewModel.commandQueue.add("onConnect");
                 mainViewModel.connectedWithServer.postValue(true);
             }
 
             @Override
             public void onDisconnected() {
                 SocketClient.ClientListener.super.onDisconnected();
-                mainViewModel.commands.postValue("onDisconnected");
+                mainViewModel.commandQueue.add("onDisconnected");
                 mainViewModel.connectedWithServer.postValue(false);
             }
 
@@ -146,13 +143,13 @@ public class ClientMainActivity extends AppCompatActivity {
             public void onPacketReceived(String command, byte[] data) {
                 SocketClient.ClientListener.super.onPacketReceived(command, data);
                 String datetime = new String(data, StandardCharsets.UTF_8);
-                mainViewModel.commands.postValue(command + " " + datetime);
+                mainViewModel.commandQueue.add(command + " " + datetime);
             }
 
             @Override
             public void onError(Exception e) {
                 SocketClient.ClientListener.super.onError(e);
-                mainViewModel.commands.postValue("onError: " + e.getMessage());
+                mainViewModel.commandQueue.add("onError: " + e.getMessage());
             }
         });
 
