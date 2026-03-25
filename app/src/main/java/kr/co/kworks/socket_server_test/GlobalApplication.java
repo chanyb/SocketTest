@@ -27,6 +27,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
@@ -425,5 +426,10 @@ public class GlobalApplication extends Application implements ViewModelStoreOwne
     public byte[] getByteArrayFromDrawable(Context context, int resource) {
         Bitmap bitmap = getBitmapFromDrawable(context, resource);
         return getByteArrayFromBitmap(bitmap);
+    }
+
+    public String getBase64StringFromDrawable(Context context, int resource) {
+        byte[] bytes = getByteArrayFromDrawable(context, resource);
+        return Base64.encodeToString(bytes, Base64.DEFAULT);
     }
 }

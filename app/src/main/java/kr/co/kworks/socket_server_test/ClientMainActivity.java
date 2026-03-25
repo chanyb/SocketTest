@@ -96,15 +96,15 @@ public class ClientMainActivity extends AppCompatActivity {
 
                 randInt = random.nextInt(100);
                 if (randInt < 20) {
-                    recognition.image = GlobalApplication.getContext().getByteArrayFromDrawable(this, R.drawable.img_fire_location);
+                    recognition.image = GlobalApplication.getContext().getBase64StringFromDrawable(this, R.drawable.img_fire_location);
                 } else if (randInt < 40) {
-                    recognition.image = GlobalApplication.getContext().getByteArrayFromDrawable(this, R.drawable.img_fire_location_2);
+                    recognition.image = GlobalApplication.getContext().getBase64StringFromDrawable(this, R.drawable.img_fire_location_2);
                 } else if (randInt < 60) {
-                    recognition.image = GlobalApplication.getContext().getByteArrayFromDrawable(this, R.drawable.img_fire_location_3);
+                    recognition.image = GlobalApplication.getContext().getBase64StringFromDrawable(this, R.drawable.img_fire_location_3);
                 } else if (randInt < 80) {
-                    recognition.image = GlobalApplication.getContext().getByteArrayFromDrawable(this, R.drawable.img_fire_location_4);
+                    recognition.image = GlobalApplication.getContext().getBase64StringFromDrawable(this, R.drawable.img_fire_location_4);
                 } else {
-                    recognition.image = GlobalApplication.getContext().getByteArrayFromDrawable(this, R.drawable.img_fire_location_5);
+                    recognition.image = GlobalApplication.getContext().getBase64StringFromDrawable(this, R.drawable.img_fire_location_5);
                 }
 
 

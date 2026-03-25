@@ -38,8 +38,8 @@ public class SocketServer extends Thread {
     public static final String CMD_DO_FIRE = "doFire";
     public static final String CMD_WS = "getWeatherSensor";
 
-    public static final String ACK_TYPE_RSP = "response";
-    public static final String ACK_TYPE_RES = "result";
+    public static final int ACK_TYPE_RSP = 1;
+    public static final int ACK_TYPE_RES = 2;
     public static final String ACK_MESSAGE_SUCCESS = "success";
     public static final String ACK_MESSAGE_FAIL = "fail";
 
@@ -207,12 +207,10 @@ public class SocketServer extends Thread {
             Recognition recognition = gson.fromJson(json, Recognition.class);
             ack.commandId = recognition.id;
 
-            String base64image = Base64.encodeToString(recognition.image, Base64.DEFAULT);
-
             // 필요하면 ViewModel 전달
             mHandler.post(() -> {
                 mainViewModel.commandQueue.add("[in] " + CMD_RECOGNITION + " " + recognition.toString());
-                mainViewModel.imageBase64String.setValue(base64image);
+                mainViewModel.imageBase64String.setValue(recognition.image);
             });
 
             ack.message = ACK_MESSAGE_SUCCESS;

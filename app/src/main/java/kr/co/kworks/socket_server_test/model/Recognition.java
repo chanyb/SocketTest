@@ -11,7 +11,7 @@ public class Recognition {
     public float x2, y2;
     public float accuracy;
     public int type;
-    public byte[] image;
+    public String image;
 
     public Recognition() {
         this.id = "";

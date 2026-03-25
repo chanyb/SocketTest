@@ -26,8 +26,8 @@ public class SocketClient {
     public static final String CMD_DO_FIRE = "doFire";
     public static final String CMD_WS = "getWeatherSensor";
 
-    public static final String ACK_TYPE_RSP = "response";
-    public static final String ACK_TYPE_RES = "result";
+    public static final int ACK_TYPE_RSP = 1;
+    public static final int ACK_TYPE_RES = 2;
     public static final String ACK_MESSAGE_SUCCESS = "success";
     public static final String ACK_MESSAGE_FAIL = "fail";
 
@@ -136,9 +136,9 @@ public class SocketClient {
                 case CMD_ACK:
                     String jsonString = new String(data, StandardCharsets.UTF_8);
                     Ack ack = gson.fromJson(jsonString, Ack.class);
-                    if (ack.type.equals(ACK_TYPE_RES)) {
+                    if (ack.type == ACK_TYPE_RES) {
                         if (listener != null) listener.onResponseReceived(ack);
-                    } else if (ack.type.equals(ACK_TYPE_RSP)) {
+                    } else if (ack.type == ACK_TYPE_RSP) {
                         if (ack.command.equals(CMD_RECOGNITION)) {
                             Recognition recognition = gson.fromJson(ack.message, Recognition.class);
                             if (listener != null) listener.onRecognitionReceived(recognition);
@@ -173,6 +173,7 @@ public class SocketClient {
     public void sendRecognition(Recognition recognition) {
         try {
             String json = gson.toJson(recognition);
+            Logger.getInstance().info("json: " + json);
             sendPacket(CMD_RECOGNITION, json.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             if (listener != null) listener.onError(e);

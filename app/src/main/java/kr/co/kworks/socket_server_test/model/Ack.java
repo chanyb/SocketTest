@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import java.util.Locale;
 
 public class Ack {
-    public String type;
+    public int type;
     public String command;
     public String message;
     public String commandId;
