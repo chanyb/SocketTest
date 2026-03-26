@@ -199,6 +199,9 @@ public class MainActivity extends AppCompatActivity {
         binding.txtCancel.setOnClickListener(v -> { // cancel
             binding.loFire.setVisibility(View.GONE);
             mainViewModel.uuidQueue.poll();
+            runOnUiThread(() -> {
+                mainViewModel.autoClickTimer.setValue(5);
+            });
         });
     }
 }
