@@ -81,13 +81,15 @@ public class ClientMainActivity extends AppCompatActivity {
             Random random = new Random();
             int randInt = random.nextInt(100);
 
-            if (randInt < 20) {
+            if (randInt < 10) {
                 //nothing to do
                 Fire fire = new Fire();
                 fire.id = String.valueOf(UUID.randomUUID());
                 fire.datetime = calendarHandler.getCurrentDatetimeString();
 
                 socketClient.sendReadyFire(fire);
+            } else if (randInt < 30) {
+                socketClient.sendWS();
             } else if (randInt < 50) {
                 socketClient.requestDatetime();
             } else {

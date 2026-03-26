@@ -19,6 +19,7 @@ public class WeatherSensor {
     private transient CalendarHandler calendarHandler;
 
     public WeatherSensor() {
+        calendarHandler = new CalendarHandler();
         id = String.valueOf(UUID.randomUUID());
         datetime = calendarHandler.getCurrentDatetimeString();
         airtempAvg = 22.0f;

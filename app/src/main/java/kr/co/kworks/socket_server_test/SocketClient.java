@@ -170,6 +170,14 @@ public class SocketClient {
         }
     }
 
+    public void sendWS() {
+        try {
+            sendPacket(CMD_WS, new byte[0]);
+        } catch (Exception e) {
+            if (listener != null) listener.onError(e);
+        }
+    }
+
     public void sendRecognition(Recognition recognition) {
         try {
             String json = gson.toJson(recognition);
